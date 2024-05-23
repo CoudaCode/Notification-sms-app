@@ -1,5 +1,7 @@
 export interface userType {
   _id: string;
+  username?: string;
+  phoneNumber?: number;
   __v: number;
 }
 

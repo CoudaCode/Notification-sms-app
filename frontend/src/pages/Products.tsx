@@ -3,10 +3,10 @@ import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthProvider";
 const Products: React.FC = () => {
   const router = useNavigate();
-  const { isAuthenticated, user } = useAuth();
+  const { isAuthenticated, user, logout } = useAuth();
   const [products, setProducts] = useState([]);
   const [quantity, setQuantity] = useState(1);
-  const [cartItems, setCartItems] = useState([]); // État du panier
+  const [cartItems, setCartItems] = useState([any]); // État du panier
 
   const incrementQuantity = () => setQuantity((prev) => prev + 1);
   const decrementQuantity = () =>
@@ -27,20 +27,19 @@ const Products: React.FC = () => {
     if (!isAuthenticated) {
       router("/login");
     }
-
     getProducts();
   }, [isAuthenticated, router]);
 
   // Fonction pour ajouter un produit au panier
-  const addToCart = (product) => {
+  const addToCart = (product: any) => {
     setCartItems([...cartItems, product]);
   };
 
   // Fonction pour supprimer un produit du panier
-  const removeFromCart = (productId) => {
-    const updatedCart = cartItems.filter((item) => item.id !== productId);
-    setCartItems(updatedCart);
-  };
+  // const removeFromCart = (productId: any) => {
+  //   const updatedCart = cartItems.filter((item: any) => item.id !== productId);
+  //   setCartItems(updatedCart);
+  // };
 
   // Total des articles dans le panier
   const cartItemCount = cartItems.length;
@@ -93,7 +92,7 @@ const Products: React.FC = () => {
           </header>
 
           <ul className="grid gap-4 mt-8 sm:grid-cols-2 lg:grid-cols-4">
-            {products.map((product) => (
+            {products.map((product: any) => (
               <article
                 className="overflow-hidden transition rounded-lg shadow hover:shadow-lg"
                 key={product.id}
