@@ -73,12 +73,12 @@ const Signup: React.FC = () => {
                 register={register}
                 className={styleInpt}
                 label="PhoneNumber"
-                type="number"
+                type="text"
                 name="phoneNumber"
                 id="phoneNumber"
                 placeholder="Enter PhoneNumber"
-                options={{ valueAsNumber: true }} // Convertissez en nombre
-                error={errors.phoneNumber?.message} // Passez le message d'erreur
+                options={{ valueAsNumber: false }} // Convertissez en nombre
+                error={errors.phoneNumber?.message as string} // Passez le message d'erreur
               />
 
               <Input
