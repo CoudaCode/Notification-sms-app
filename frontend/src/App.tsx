@@ -7,6 +7,7 @@ import Loader from "./components/Loader";
 import AuthProvider from "./context/AuthProvider";
 import Home from "./pages/Home";
 import Login from "./pages/Login";
+import Payment from "./pages/Payment";
 import Products from "./pages/Products";
 import Profile from "./pages/Profile";
 import Signup from "./pages/Sign-up";
@@ -20,10 +21,11 @@ const App: React.FC = () => {
     <>
       <QueryClientProvider client={queryClient}>
         <Toaster richColors />
-        {/* Wrap routes with AuthProvider */}
+
         <AuthProvider>
           <Routes>
             <Route path="/" element={<Home />} />
+            <Route path="/paiement" element={<Payment />} />
             <Route path="/transaction" element={<Transaction />} />
             <Route path="/profile" element={<Profile />} />
             <Route path="/product" element={<Products />} />

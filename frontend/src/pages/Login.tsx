@@ -22,11 +22,13 @@ const Login: React.FC = () => {
     handleSubmit,
     formState: { errors },
   } = useForm<LoginFormInputs>({
-    resolver: zodResolver(LoginSchema), // Utilisez zodResolver avec votre schéma
+    resolver: zodResolver(LoginSchema),
   });
   const { Login, isLoading } = useAuth();
 
-  const onSubmit = async (data: LoginFormInputs) => {
+  const onSubmit: (data: LoginFormInputs) => Promise<void> = async (
+    data: LoginFormInputs
+  ) => {
     try {
       await Login(data);
       toast.success("Connexion réussie");
@@ -62,12 +64,12 @@ const Login: React.FC = () => {
                 register={register}
                 className={styleInpt}
                 label="PhoneNumber"
-                type="text" // Changez en 'text' pour correspondre à la validation zod
+                type="text"
                 name="phoneNumber"
                 id="phoneNumber"
                 placeholder="Enter PhoneNumber"
-                options={{ valueAsNumber: false }} // Ne pas convertir en nombre
-                error={errors.phoneNumber?.message as string} // Passez le message d'erreur comme string
+                options={{ valueAsNumber: false }}
+                error={errors.phoneNumber?.message as string}
               />
               <Input
                 register={register}
@@ -77,7 +79,7 @@ const Login: React.FC = () => {
                 name="password"
                 id="password"
                 placeholder="Enter mot de passe"
-                error={errors.password?.message as string} // Passez le message d'erreur comme string
+                error={errors.password?.message as string}
               />
               <div className="flex items-center justify-between">
                 <p className="text-sm text-gray-400 hover:text-gray-700">

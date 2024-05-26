@@ -21,13 +21,12 @@ const Signup: React.FC = () => {
     handleSubmit,
     formState: { errors },
   } = useForm<SignupFormInputs>({
-    resolver: zodResolver(signupSchema), // Utilisez zodResolver avec votre schéma
+    resolver: zodResolver(signupSchema),
   });
   const { signup, isLoading } = useAuth();
 
   const onSubmit = async (data: SignupFormInputs) => {
     try {
-      console.log(data);
       await signup(data);
       toast.success("Inscription réussie");
       router("/login");
@@ -66,7 +65,7 @@ const Signup: React.FC = () => {
                 name="username"
                 id="username"
                 placeholder="Enter username"
-                error={errors.username?.message} // Passez le message d'erreur
+                error={errors.username?.message}
               />
 
               <Input
@@ -77,8 +76,8 @@ const Signup: React.FC = () => {
                 name="phoneNumber"
                 id="phoneNumber"
                 placeholder="Enter PhoneNumber"
-                options={{ valueAsNumber: false }} // Convertissez en nombre
-                error={errors.phoneNumber?.message as string} // Passez le message d'erreur
+                options={{ valueAsNumber: false }}
+                error={errors.phoneNumber?.message as string}
               />
 
               <Input
@@ -89,7 +88,7 @@ const Signup: React.FC = () => {
                 name="password"
                 id="password"
                 placeholder="Enter mot de passe"
-                error={errors.password?.message} // Passez le message d'erreur
+                error={errors.password?.message}
               />
               <div className="flex items-center justify-between">
                 <p className="text-sm text-gray-400 hover:text-gray-700">

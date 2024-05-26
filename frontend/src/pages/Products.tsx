@@ -1,19 +1,21 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { any } from "zod";
 import { useAuth } from "../context/AuthProvider";
+import { Product } from "./../types/Products";
+
 const Products: React.FC = () => {
   const router = useNavigate();
   const { isAuthenticated, user, logout } = useAuth();
   const [products, setProducts] = useState([]);
   const [quantity, setQuantity] = useState(1);
-  const [cartItems, setCartItems] = useState([any]); // État du panier
+  const [cartItems, setCartItems] = useState<Product[]>([]);
 
-  const incrementQuantity = () => setQuantity((prev) => prev + 1);
-  const decrementQuantity = () =>
-    setQuantity((prev) => (prev === 1 ? 1 : prev - 1));
+  const incrementQuantity: () => void = () =>
+    setQuantity((prev: number) => prev + 1);
+  const decrementQuantity: () => void = () =>
+    setQuantity((prev: number) => (prev === 1 ? 1 : prev - 1));
 
-  const getProducts = async () => {
+  const getProducts: () => Promise<void> = async () => {
     try {
       const response = await fetch("https://dummyjson.com/products");
       const data = await response.json();
@@ -31,19 +33,16 @@ const Products: React.FC = () => {
     getProducts();
   }, [isAuthenticated, router]);
 
-  // Fonction pour ajouter un produit au panier
-  const addToCart = (product: any) => {
+  const addToCart: (product: Product) => void = (product) => {
+    console.log("to", product.id);
     setCartItems([...cartItems, product]);
   };
 
-  // Fonction pour supprimer un produit du panier
-  // const removeFromCart = (productId: any) => {
-  //   const updatedCart = cartItems.filter((item: any) => item.id !== productId);
-  //   setCartItems(updatedCart);
-  // };
-
-  // Total des articles dans le panier
-  const cartItemCount = cartItems.length;
+  const handleLogout: () => void = () => {
+    logout();
+    router("/login");
+  };
+  const cartItemCount: number = cartItems.length;
 
   return (
     <>
@@ -67,12 +66,12 @@ const Products: React.FC = () => {
                 className="block px-5 py-3 text-sm font-medium text-white transition bg-red-600 rounded-lg hover:bg-red-700 focus:outline-none focus:ring"
                 type="button"
                 onClick={() => {
-                  // Fonction de déconnexion
+                  handleLogout();
                 }}
               >
                 Deconnexion
               </button>
-              {/* Affichage du mini-panier */}
+
               <Link
                 to="/transaction"
                 className="block px-5 py-3 text-sm font-medium text-white transition bg-blue-600 rounded-lg hover:bg-blue-700 focus:outline-none focus:ring"
@@ -93,7 +92,7 @@ const Products: React.FC = () => {
           </header>
 
           <ul className="grid gap-4 mt-8 sm:grid-cols-2 lg:grid-cols-4">
-            {products.map((product: any) => (
+            {products.map((product: Product) => (
               <article
                 className="overflow-hidden transition rounded-lg shadow hover:shadow-lg"
                 key={product.id}

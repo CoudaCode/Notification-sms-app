@@ -56,6 +56,7 @@ const AuthProvider = ({ children }: Props) => {
 
   useEffect(() => {
     if (user) {
+      console.log("user", user);
       localStorage.setItem("user", JSON.stringify(user));
     } else {
       localStorage.removeItem("user");
@@ -75,7 +76,6 @@ const AuthProvider = ({ children }: Props) => {
 
       if (response.ok) {
         const userData = await response.json();
-        console.log(userData);
         setUser(userData); // Mettez à jour les informations de l'utilisateur si le token est valide
         setIsAuthenticated(true);
         setIsLoading(false);
@@ -111,7 +111,7 @@ const AuthProvider = ({ children }: Props) => {
         );
       }
       const result = await response.json();
-      setUser(result.message);
+      setUser({ ...result.message, balance: 50000 });
       setIsAuthenticated(true);
       Cookies.set("userConnect", result.token);
       setIsLoading(false);
