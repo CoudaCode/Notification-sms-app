@@ -1,5 +1,4 @@
 export const API_URL = "http://localhost:3000";
 
-/**
- * Votre commande a bien été confirmée. Merci pour votre achat! 🛒 Nous vous tiendrons informé de l'avancement de votre livraison. Restez à l'écoute! 📦
- */
+export const smstoken: string =
+  "Njc.BNtAdZ5Q03Me7cYrbFmyly5MGsrwqus36_corp-VRgaAdVTCqeltk3FBMJ3t";

@@ -5,6 +5,7 @@ interface IUser extends Document {
   password: string;
   phoneNumber: number;
   profile: Types.ObjectId;
+  balance: number;
 }
 
 const UserSchema = new Schema<IUser>({
@@ -20,6 +21,10 @@ const UserSchema = new Schema<IUser>({
   phoneNumber: {
     type: Number,
     required: true,
+  },
+  balance: {
+    type: Number,
+    default: 0,
   },
 });
 

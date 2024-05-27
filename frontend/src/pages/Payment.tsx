@@ -1,46 +1,82 @@
-import { useState } from "react";
-import { useAuth } from "../context/AuthProvider";
+import { Dialog, Transition } from "@headlessui/react";
+import { Fragment, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { smstoken } from "../api/url";
+import { useAuthStore } from "../context/useAuthStore";
 
 function Payment() {
-  const { user } = useAuth();
-  const [phoneNumber, setPhoneNumber] = useState("");
-  const [confirmationMessage, setConfirmationMessage] = useState("");
+  const { user, setUser } = useAuthStore((state) => ({
+    user: state.user,
+    setUser: state.setUser,
+  }));
+  const router = useNavigate();
+  const [confirmationMessage, setConfirmationMessage] = useState<string>("");
+  const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
 
-  const handlePaymentConfirmation = () => {
-    // Vérification du numéro de téléphone
-    if (!isValidPhoneNumber(phoneNumber)) {
-      setConfirmationMessage("Veuillez saisir un numéro de téléphone valide.");
+  const handlePaymentConfirmation = async (event) => {
+    event.preventDefault();
+
+    const paymentAmount = 10000;
+
+    if (user && (user.balance ?? 0) < paymentAmount) {
+      setConfirmationMessage("Solde insuffisant pour effectuer le paiement.");
+      setIsModalOpen(true);
       return;
     }
 
-    // Vérification du solde
-    // const paymentAmount = /* Montant du paiement */;
-    // if (user.balance < paymentAmount) {
-    //   setConfirmationMessage("Solde insuffisant pour effectuer le paiement.");
-    //   return;
-    // }
+    if (user) {
+      try {
+        await sendConfirmationSMS(user.phoneNumber);
 
-    // Envoi du SMS de confirmation
-    sendConfirmationSMS(phoneNumber);
-
-    // Affichage du message de confirmation
-    setConfirmationMessage(
-      "Un message de confirmation a été envoyé à votre numéro de téléphone."
-    );
+        const newBalance = user.balance - paymentAmount;
+        const updatedUser = { ...user, balance: newBalance };
+        setUser(updatedUser);
+        setConfirmationMessage(
+          "Votre commande a été validée. Un message de confirmation a été envoyé à votre numéro de téléphone."
+        );
+        setIsModalOpen(true);
+      } catch (error) {
+        console.error(error);
+        setConfirmationMessage(
+          "Une erreur s'est produite lors de l'envoi du SMS."
+        );
+        setIsModalOpen(true);
+      }
+    }
   };
 
-  const isValidPhoneNumber = (phoneNumber) => {
-    // Logique de validation du numéro de téléphone
-    // Retourne true si le numéro est valide, false sinon
-    return phoneNumber.length === 10; // Exemple simple de validation
+  const sendConfirmationSMS = async (phoneNumber) => {
+    const options = {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${smstoken}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        sender_id: "INFO SMS",
+        recipient: `${phoneNumber}`,
+        message:
+          "Votre commande a bien été confirmée. Merci pour votre achat! 🛒 Nous vous tiendrons informé de l'avancement de votre livraison. Restez à l'écoute! 📦",
+      }),
+    };
+
+    try {
+      const response = await fetch(
+        "https://api.jetfy.net/api/v1/sms/send",
+        options
+      );
+      const responseData = await response.json();
+      console.log(responseData);
+      return responseData;
+    } catch (error) {
+      console.error(error);
+      throw new Error("Une erreur s'est produite lors de l'envoi du SMS.");
+    }
   };
 
-  const sendConfirmationSMS = (phoneNumber) => {
-    // Logique d'envoi de SMS de confirmation
-    // Ici, vous enverrez réellement le SMS à l'utilisateur
-    // (cette fonction peut être une requête à votre service d'envoi de SMS ou une API tierce)
-    // Par exemple :
-    // sendSMSService.sendConfirmationSMS(phoneNumber, "Votre commande a été validée. Merci!");
+  const closeModal = () => {
+    setIsModalOpen(false);
+    router("/product");
   };
 
   return (
@@ -78,9 +114,8 @@ function Payment() {
               <input
                 id="phoneNumber"
                 type="tel"
-                value={phoneNumber}
-                onChange={(e) => setPhoneNumber(e.target.value)}
-                required
+                value={user?.phoneNumber || ""}
+                readOnly
                 className="block w-full px-4 py-3 leading-tight text-gray-700 bg-gray-100 border rounded appearance-none focus:outline-none focus:bg-white"
               />
             </div>
@@ -97,10 +132,60 @@ function Payment() {
             </div>
           </div>
         </form>
-        {confirmationMessage && (
-          <div className="mt-4 text-gray-800">{confirmationMessage}</div>
-        )}
       </div>
+
+      <Transition appear show={isModalOpen} as={Fragment}>
+        <Dialog as="div" className="relative z-10" onClose={closeModal}>
+          <Transition.Child
+            as={Fragment}
+            enter="ease-out duration-300"
+            enterFrom="opacity-0"
+            enterTo="opacity-100"
+            leave="ease-in duration-200"
+            leaveFrom="opacity-100"
+            leaveTo="opacity-0"
+          >
+            <div className="fixed inset-0 bg-black bg-opacity-25" />
+          </Transition.Child>
+
+          <div className="fixed inset-0 overflow-y-auto">
+            <div className="flex items-center justify-center min-h-full p-4 text-center">
+              <Transition.Child
+                as={Fragment}
+                enter="ease-out duration-300"
+                enterFrom="opacity-0 scale-95"
+                enterTo="opacity-100 scale-100"
+                leave="ease-in duration-200"
+                leaveFrom="opacity-100 scale-100"
+                leaveTo="opacity-0 scale-95"
+              >
+                <Dialog.Panel className="w-full max-w-md p-6 overflow-hidden text-left align-middle transition-all transform bg-white shadow-xl rounded-2xl">
+                  <Dialog.Title
+                    as="h3"
+                    className="text-lg font-medium leading-6 text-gray-900"
+                  >
+                    Confirmation du paiement
+                  </Dialog.Title>
+                  <div className="mt-2">
+                    <p className="text-sm text-gray-500">
+                      {confirmationMessage}
+                    </p>
+                  </div>
+                  <div className="mt-4">
+                    <button
+                      type="button"
+                      className="inline-flex justify-center px-4 py-2 text-sm font-medium text-blue-900 bg-blue-100 border border-transparent rounded-md hover:bg-blue-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-blue-500"
+                      onClick={closeModal}
+                    >
+                      OK
+                    </button>
+                  </div>
+                </Dialog.Panel>
+              </Transition.Child>
+            </div>
+          </div>
+        </Dialog>
+      </Transition>
     </div>
   );
 }

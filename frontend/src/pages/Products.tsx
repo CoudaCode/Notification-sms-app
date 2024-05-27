@@ -1,29 +1,53 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { useAuth } from "../context/AuthProvider";
-import { Product } from "./../types/Products";
+import { useAuthStore } from "../context/useAuthStore"; // Importer le store Zustand
+import { Product } from "../types/Products";
 
 const Products: React.FC = () => {
   const router = useNavigate();
-  const { isAuthenticated, user, logout } = useAuth();
-  const [products, setProducts] = useState([]);
-  const [quantity, setQuantity] = useState(1);
-  const [cartItems, setCartItems] = useState<Product[]>([]);
+  const { isAuthenticated, user, logout } = useAuthStore((state) => ({
+    isAuthenticated: state.isAuthenticated,
+    user: state.user,
+    logout: state.logout,
+  }));
+  const [products, setProducts] = useState<Product[]>([]);
+  const [cartItems, setCartItems] = useState<
+    { name: string; price: number; quantity: number }[]
+  >([]);
 
-  const incrementQuantity: () => void = () =>
-    setQuantity((prev: number) => prev + 1);
-  const decrementQuantity: () => void = () =>
-    setQuantity((prev: number) => (prev === 1 ? 1 : prev - 1));
-
-  const getProducts: () => Promise<void> = async () => {
+  const getProducts = async () => {
     try {
       const response = await fetch("https://dummyjson.com/products");
       const data = await response.json();
-
-      setProducts(data.products);
+      // Ajouter la quantité initiale de chaque produit
+      const productsWithQuantity = data.products.map((product: Product) => ({
+        ...product,
+        quantity: 1, // Initialiser la quantité à 1
+      }));
+      setProducts(productsWithQuantity);
     } catch (e) {
       console.error(e);
     }
+  };
+
+  const incrementQuantity = (productId: number) => {
+    setProducts((prevProducts) =>
+      prevProducts.map((product) =>
+        product.id === productId
+          ? { ...product, quantity: product.quantity + 1 }
+          : product
+      )
+    );
+  };
+
+  const decrementQuantity = (productId: number) => {
+    setProducts((prevProducts) =>
+      prevProducts.map((product) =>
+        product.id === productId && product.quantity > 1
+          ? { ...product, quantity: product.quantity - 1 }
+          : product
+      )
+    );
   };
 
   useEffect(() => {
@@ -33,17 +57,20 @@ const Products: React.FC = () => {
     getProducts();
   }, [isAuthenticated, router]);
 
-  const addToCart: (product: Product) => void = (product) => {
-    console.log("to", product.id);
-    setCartItems([...cartItems, product]);
+  const addToCart = (product: Product) => {
+    console.log(cartItems);
+    setCartItems((prevCartItems) => [
+      ...prevCartItems,
+      { name: product.title, price: product.price, quantity: product.quantity },
+    ]);
   };
 
-  const handleLogout: () => void = () => {
+  const handleLogout = () => {
     logout();
     router("/login");
   };
-  const cartItemCount: number = cartItems.length;
 
+  const cartItemCount = cartItems.length;
   return (
     <>
       <header className="bg-gray-500">
@@ -58,20 +85,17 @@ const Products: React.FC = () => {
             <div className="flex flex-col gap-4 mt-4 sm:mt-0 sm:flex-row sm:items-center">
               <Link
                 className="block px-5 py-3 mr-4 text-sm font-medium text-white transition bg-gray-600 rounded-lg hover:bg-gray-700 focus:outline-none focus:ring"
-                to={"/profile"}
+                to="/profile"
               >
                 Profile
               </Link>
               <button
                 className="block px-5 py-3 text-sm font-medium text-white transition bg-red-600 rounded-lg hover:bg-red-700 focus:outline-none focus:ring"
                 type="button"
-                onClick={() => {
-                  handleLogout();
-                }}
+                onClick={handleLogout}
               >
                 Deconnexion
               </button>
-
               <Link
                 to="/transaction"
                 className="block px-5 py-3 text-sm font-medium text-white transition bg-blue-600 rounded-lg hover:bg-blue-700 focus:outline-none focus:ring"
@@ -92,13 +116,13 @@ const Products: React.FC = () => {
           </header>
 
           <ul className="grid gap-4 mt-8 sm:grid-cols-2 lg:grid-cols-4">
-            {products.map((product: Product) => (
+            {products.map((product) => (
               <article
                 className="overflow-hidden transition rounded-lg shadow hover:shadow-lg"
                 key={product.id}
               >
                 <img
-                  alt=""
+                  alt={product.title}
                   src={product.images[0]}
                   className="object-cover w-full h-56"
                 />
@@ -108,8 +132,7 @@ const Products: React.FC = () => {
                     dateTime="2022-10-10"
                     className="block text-xs text-gray-500"
                   >
-                    {" "}
-                    10th Oct 2022{" "}
+                    10th Oct 2022
                   </time>
 
                   <a href="#">
@@ -132,16 +155,16 @@ const Products: React.FC = () => {
                     <div className="flex items-center space-x-4">
                       <button
                         className="px-3 py-1 text-gray-700 bg-gray-200 rounded-full"
-                        onClick={() => decrementQuantity()}
+                        onClick={() => decrementQuantity(product.id)}
                       >
                         -
                       </button>
                       <span className="px-3 py-1 text-gray-700 bg-gray-200 rounded-full">
-                        {quantity}
+                        {product.quantity}
                       </span>
                       <button
                         className="px-3 py-1 text-gray-700 bg-gray-200 rounded-full"
-                        onClick={() => incrementQuantity()}
+                        onClick={() => incrementQuantity(product.id)}
                       >
                         +
                       </button>
@@ -152,7 +175,7 @@ const Products: React.FC = () => {
                     className="mt-4 inline-flex items-center justify-center gap-1.5 rounded-lg border border-gray-200 px-5 py-3 text-gray-500 transition hover:bg-gray-50 hover:text-gray-700 focus:outline-none focus:ring"
                     onClick={() => addToCart(product)}
                   >
-                    <span className="text-sm font-medium"> Ajouter </span>
+                    <span className="text-sm font-medium">Ajouter</span>
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
                       className="w-4 h-4"

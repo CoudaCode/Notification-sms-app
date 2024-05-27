@@ -20,6 +20,7 @@ class UserController {
         username,
         phoneNumber,
         password: await hasHMdp(password),
+        balance: 50000,
       });
 
       if (!newUser)
