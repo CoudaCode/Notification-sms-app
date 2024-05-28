@@ -8,8 +8,8 @@ interface InputProps<T extends FieldValues> {
   placeholder: string;
   className: string;
   register: UseFormRegister<T>;
-  options?: object; // Optionnel : pour passer des options supplémentaires à register
-  error?: string; // Ajoutez une prop error de type string optionnelle
+  options?: object;
+  error?: string;
 }
 
 const Input = <T extends FieldValues>({
@@ -29,14 +29,13 @@ const Input = <T extends FieldValues>({
         {label}
       </label>
       <input
-        {...register(name, options)} // Passez les options supplémentaires à register
+        {...register(name, options)}
         type={type}
         id={id}
         placeholder={placeholder}
         className={className}
       />
-      {error && <p className="mt-2 text-red-500">{error}</p>}{" "}
-      {/* Affichez le message d'erreur */}
+      {error && <p className="mt-2 text-red-500">{error}</p>}
     </div>
   );
 };

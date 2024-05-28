@@ -4,7 +4,6 @@ import { Route, Routes } from "react-router-dom";
 import { Toaster } from "sonner";
 import "./App.css";
 import Loader from "./components/Loader";
-// import AuthProvider from "./context/AuthProvider";
 import Home from "./pages/Home";
 import Login from "./pages/Login";
 import Payment from "./pages/Payment";
@@ -20,8 +19,6 @@ const App: React.FC = () => {
     <>
       <QueryClientProvider client={queryClient}>
         <Toaster richColors />
-
-        {/* <AuthProvider> */}
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/paiement" element={<Payment />} />
@@ -32,7 +29,6 @@ const App: React.FC = () => {
           <Route path="/signup" element={<Signup />} />
           <Route path="/loader" element={<Loader />} />
         </Routes>
-        {/* </AuthProvider> */}
       </QueryClientProvider>
     </>
   );

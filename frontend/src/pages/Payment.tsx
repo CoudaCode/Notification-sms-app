@@ -28,7 +28,7 @@ function Payment() {
       try {
         await sendConfirmationSMS(user.phoneNumber);
 
-        const newBalance = user.balance - paymentAmount;
+        const newBalance: number = user?.balance - paymentAmount;
         const updatedUser = { ...user, balance: newBalance };
         setUser(updatedUser);
         setConfirmationMessage(

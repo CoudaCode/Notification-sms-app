@@ -1,7 +1,7 @@
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { useAuthStore } from "../context/useAuthStore"; // Importer le store Zustand
-import { Product } from "../types/Products";
+import { useProductStore } from "../context/productStore";
+import { useAuthStore } from "../context/useAuthStore";
 
 const Products: React.FC = () => {
   const router = useNavigate();
@@ -10,67 +10,35 @@ const Products: React.FC = () => {
     user: state.user,
     logout: state.logout,
   }));
-  const [products, setProducts] = useState<Product[]>([]);
-  const [cartItems, setCartItems] = useState<
-    { name: string; price: number; quantity: number }[]
-  >([]);
 
-  const getProducts = async () => {
-    try {
-      const response = await fetch("https://dummyjson.com/products");
-      const data = await response.json();
-      // Ajouter la quantité initiale de chaque produit
-      const productsWithQuantity = data.products.map((product: Product) => ({
-        ...product,
-        quantity: 1, // Initialiser la quantité à 1
-      }));
-      setProducts(productsWithQuantity);
-    } catch (e) {
-      console.error(e);
-    }
-  };
-
-  const incrementQuantity = (productId: number) => {
-    setProducts((prevProducts) =>
-      prevProducts.map((product) =>
-        product.id === productId
-          ? { ...product, quantity: product.quantity + 1 }
-          : product
-      )
-    );
-  };
-
-  const decrementQuantity = (productId: number) => {
-    setProducts((prevProducts) =>
-      prevProducts.map((product) =>
-        product.id === productId && product.quantity > 1
-          ? { ...product, quantity: product.quantity - 1 }
-          : product
-      )
-    );
-  };
+  const {
+    products,
+    cartItems,
+    fetchProducts,
+    incrementQuantity,
+    decrementQuantity,
+    addToCart,
+  } = useProductStore();
 
   useEffect(() => {
     if (!isAuthenticated) {
       router("/login");
+    } else {
+      fetchProducts();
     }
-    getProducts();
-  }, [isAuthenticated, router]);
-
-  const addToCart = (product: Product) => {
-    console.log(cartItems);
-    setCartItems((prevCartItems) => [
-      ...prevCartItems,
-      { name: product.title, price: product.price, quantity: product.quantity },
-    ]);
-  };
+  }, [isAuthenticated, router, fetchProducts]);
 
   const handleLogout = () => {
     logout();
     router("/login");
   };
 
-  const cartItemCount = cartItems.length;
+  const getTotalQuantity = () => {
+    return cartItems.reduce((total, item) => total + item.quantity, 0);
+  };
+
+  const cartItemCount = getTotalQuantity();
+
   return (
     <>
       <header className="bg-gray-500">
@@ -94,10 +62,12 @@ const Products: React.FC = () => {
                 type="button"
                 onClick={handleLogout}
               >
-                Deconnexion
+                Déconnexion
               </button>
               <Link
-                to="/transaction"
+                to={{
+                  pathname: "/transaction",
+                }}
                 className="block px-5 py-3 text-sm font-medium text-white transition bg-blue-600 rounded-lg hover:bg-blue-700 focus:outline-none focus:ring"
               >
                 Panier ({cartItemCount})
@@ -111,7 +81,7 @@ const Products: React.FC = () => {
         <div className="max-w-screen-xl px-4 py-8 mx-auto sm:px-6 sm:py-12 lg:px-8">
           <header className="text-center">
             <h2 className="text-xl font-bold text-gray-400 sm:text-3xl">
-              Product Collection
+              Collection de Produits
             </h2>
           </header>
 
@@ -123,7 +93,7 @@ const Products: React.FC = () => {
               >
                 <img
                   alt={product.title}
-                  src={product.images[0]}
+                  src={product.image}
                   className="object-cover w-full h-56"
                 />
 
